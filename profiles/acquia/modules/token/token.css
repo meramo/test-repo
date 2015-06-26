@@ -25,3 +25,8 @@
 .token-tree td.token-key {
   white-space: nowrap;
 }
+
+// HACKED COMMENT
+.hacked {
+  display: none;
+}

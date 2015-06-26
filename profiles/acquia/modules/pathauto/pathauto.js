@@ -1,3 +1,4 @@
+// herre another hack
 (function ($) {
 
 Drupal.behaviors.pathFieldsetSummaries = {
