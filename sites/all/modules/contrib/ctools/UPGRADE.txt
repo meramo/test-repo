@@ -1,21 +1,23 @@
+Modified ctools
+
 Upgrading from ctools-6.x-1.x to ctools-7.x-2.x:
 
   - Remove ctools_ajax_associate_url_to_element as it shouldn't be necessary
     with the new AJAX api's in Drupal core.
 
-  - All calls to the ctools_ajax_command_prepend() should be replace with 
+  - All calls to the ctools_ajax_command_prepend() should be replace with
     the core function ajax_command_prepend();
-    This is also the case for append, insert, after, before, replace, html, 
-    and remove commands. 
-    Each of these commands have been incorporated into the 
-    Drupal.ajax.prototype.commands.insert   
+    This is also the case for append, insert, after, before, replace, html,
+    and remove commands.
+    Each of these commands have been incorporated into the
+    Drupal.ajax.prototype.commands.insert
     function with a corresponding parameter specifying which method to use.
 
   - All calls to ctools_ajax_render() should be replaced with calls to core
     ajax_render(). Note that ctools_ajax_render() printed the json object and
-    exited, ajax_render() gives you this responsibility. 
+    exited, ajax_render() gives you this responsibility.
 
-    ctools_ajax_render() 
+    ctools_ajax_render()
 
     becomes
 
@@ -30,9 +32,9 @@ Upgrading from ctools-6.x-1.x to ctools-7.x-2.x:
 
   - All wizard form builder functions must now return a form array().
 
-  - ctools_build_form is very close to being removed.  In anticipation of this, 
-    all $form_state['wrapper callback']s must now be 
-    $form_state['wrapper_callback']. In addition to this $form_state['args'] 
+  - ctools_build_form is very close to being removed.  In anticipation of this,
+    all $form_state['wrapper callback']s must now be
+    $form_state['wrapper_callback']. In addition to this $form_state['args']
     must now be $form_state['build_info']['args'].
 
     NOTE: Previously checking to see if the return from ctools_build_form()
@@ -50,7 +52,7 @@ Upgrading from ctools-6.x-1.x to ctools-7.x-2.x:
   - Plugins that use 'theme arguments' now use 'theme variables' instead.
 
   - Context, argument and relationship plugins now use 'add form' and/or
-    'edit form' rather than 'settings form'. These plugins now support 
+    'edit form' rather than 'settings form'. These plugins now support
     form wizards just like content plugins. These forms now all take
     $form, &$form_state as arguments, and the configuration for the plugin
     can be found in $form_state['conf'].
