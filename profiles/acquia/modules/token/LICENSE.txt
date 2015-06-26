@@ -1,3 +1,5 @@
+Just a general comment as a patch
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 2, June 1991
 
