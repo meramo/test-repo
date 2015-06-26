@@ -1,0 +1,4 @@
+name = ActiveHelper LiveHelp Live Chat
+version = 3.8.0
+description =Drupal Live Chat Module is the most affordable and scalable Live Chat. ActiveHelper LiveHelp Live Chat System is perfect for small and medium Drupal sites. Answer Live chats from any location, Desktop and mobile are included, Windows and Mac, IOS and Android too.
+core = 7.x
