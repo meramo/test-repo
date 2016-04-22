@@ -1,0 +1,5 @@
+name = "Ajax pager"
+description = Ajax pager
+core = 7.x
+dependencies[] = ctools
+

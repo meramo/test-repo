@@ -1,0 +1,9 @@
+name = Users online
+description = Determine if a user is or not online.
+core = 7.x
+
+dependencies[] = views
+
+; Views
+;files[] = includes/users_online_views.inc
+files[] = views_handler_users_online_field.inc

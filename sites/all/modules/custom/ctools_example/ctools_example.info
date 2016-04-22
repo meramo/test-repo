@@ -1,0 +1,7 @@
+; $Id$
+name = "Ctools content type"
+description = Ctools content type example
+core = 7.x
+dependencies[] = ctools
+dependencies[] = panels
+

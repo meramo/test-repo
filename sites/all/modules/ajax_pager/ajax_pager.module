@@ -1,0 +1,249 @@
+<?php
+
+/**
+ * Implmentation of hook_block_info()
+ *
+ * Register the ajax pager example block
+ */
+function ajax_pager_block_info()
+{
+  $blocks['ajax_pager_example'] = array
+  (
+    'info' => t('Ajax pager example'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implementation of hook_block_view()
+ *
+ * Display the ajax pager example block
+ */
+function ajax_pager_block_view($delta = '')
+{
+  if($delta == 'ajax_pager_example')
+  {
+    $block = array
+    (
+      'subject' => t('Ajax Pager Example'),
+      'content' => array
+      (
+        'ajax_pager_example_block' => array
+        (
+          // drupal_get_form() returns a render array, so we can
+          // assign it directly to 'form'
+          'form' => drupal_get_form('ajax_pager_form'),
+        )
+      ),
+    );
+
+    return $block;
+  }
+}
+
+function ajax_pager_form($form, &$form_state)
+{
+  // This class is needed for our ajax, as the #id will change
+  // each time the form is rebuilt with ajax, and we need a
+  // consistent selector we can work with
+  $form['#attributes'] = array('class' => 'ajax_pager_form');
+
+  // Determine whether or not the items should be shown. By
+  // default, items are not shown
+  $show_items = 0;
+  // If $form_state['values'] is set, then $form_state['storage']['show_items']
+  // will also be set. We will use this value instead of the default.
+  if(isset($form_state['values']))
+  {
+    $show_items = $form_state['values']['show_items'];
+  }
+  // On non-ajax page loads, we will add $_GET['show_items'] if the items are
+  // to be shown. In this case, we want to use the value from the URL, but only
+  // if $form_stage['values']['show_items'] has not been set.
+  elseif(isset($_GET['show_items']) && is_numeric($_GET['show_items']))
+  {
+    $show_items = $_GET['show_items'];
+  }
+
+  // Our form element to determine whether or not to show items.
+  $form['show_items'] = array
+  (
+    '#type' => 'radios',
+    '#title' => t('Show items?'),
+    '#options' => array
+    (
+      0 => t('Hide'),
+      1 => t('Show'),
+    ),
+    '#default_value' => $show_items,
+  );
+
+  if($show_items)
+  {
+    // If $form_state['values']['current_page'] is set, this will the page of items
+    // that we should show. To our query to select these values, we need
+    // to manually set $_GET['page']. However, we only want to set the value
+    // during our query, and if there is already a value set for $_GET['page'], we want
+    // to put that back after our query. So we store the existing value in $getpage.
+    if(isset($form_state['values'], $form_state['values']['current_page']) && is_numeric($form_state['values']['current_page']))
+    {
+      // Get the original value if it exists
+      $getpage = FALSE;
+      if(isset($_GET['page']))
+      {
+        $getpage = $_GET['page'];
+      }
+      // Set our value as the page number
+      $_GET['page'] = $form_state['values']['current_page'];
+    }
+
+    // Query the database for our items, with a pager query
+    $query = db_select('node', 'n')->extend('PagerDefault');
+    $query->addField('n', 'nid');
+    $query->condition('n.type', 'article');
+    $query->limit(5);
+    $query->element(0);
+    $result = $query->execute()->fetchAllAssoc('nid');
+
+    // If $getpage is set, we need to either put back the original
+    // value of $_GET['page'], or if there was no original value, we
+    // will unset it. This adds stability to our page loads.
+    if(isset($getpage))
+    {
+      // $_GET['page'] was not originally set
+      // so we will unset it.
+      if($getpage === FALSE)
+      {
+        unset($_GET['page']);
+      }
+      // $_GET['page'] was originally set, so we
+      // will put it back.
+      else
+      {
+        $_GET['page'] = $getpage;
+      }
+    }
+
+    if($result)
+    {
+      // Retrieve the NIDs
+      $nids = array_keys($result);
+      // Load the relevant nodes
+      $nodes = node_load_multiple($nids);
+
+      // Turn each node into a render array to be displayed
+      $viewable = array();
+      foreach($nodes as $node)
+      {
+        $viewable[] = node_view($node, 'teaser');
+      }
+
+      // set the items to be shown
+      $form['items'] = array
+      (
+        // $viewable is a render array, and can be added as-is
+        'nodes' => $viewable,
+        // Add our pager
+        'pager' => array
+        (
+          '#theme' => 'pager',
+          // Force the element we set in our $query
+          '#element' => 0,
+          // This is our non-JS fallback, to ensure that the
+          // elements are shown when the page is loaded after
+          // clicking a pager item. #parameters adds the given
+          // array as $_GET variables to the link in the pager item.
+          '#parameters' => array('show_items' => 1),
+        ),
+      );
+
+      // We set this container to store the page number of the page that is clicked.
+      // This value will be set with JavaScript.
+      $form['current_page'] = array
+      (
+        '#type' => 'hidden',
+        '#attributes' => array('class' => array('current_pager_container')),
+      );
+    }
+  }
+
+  // Our submit button to make things work.
+  $form['apply'] = array
+  (
+    '#type' => 'submit',
+    '#value' => t('Apply'),
+  );
+
+  // Attach our JavaScript file that will set the current page number when the pager is clicked.
+  $form['#attached']['js'][] = array
+  (
+    'type' => 'file',
+    'data' => drupal_get_path('module', 'ajax_pager') . '/js/ajax_pager_example.js',
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler for ajax_pager_form()
+ */
+function ajax_pager_form_submit($form, &$form_state)
+{
+  // We need to rebuild our form so that $form_state['values']
+  // is available to the form definition.
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Implementation of hook_form_alter()
+ *
+ * Actually, it would be preferable to use hook_form_FORM_ID_alter()
+ * rather than hook_form_alter(). In this case, the function name would be
+ * hook_form_ajax_pager_form_alter(). But for the purpose of simplicity and
+ * understanding for this tutorial, hook_form_alter() is used.
+ */
+function ajax_pager_form_alter(&$form, &$form_state, $form_id)
+{
+  // Only act on ajax_pager_form()
+  if($form_id == 'ajax_pager_form')
+  {
+    // When the pager is clicked when JS is disabled, various $_GET elements
+    // are added to the URL. These become part of the form action, but this is not
+    //  so we remove them.
+
+    // First: remove page=___
+    $form['#action'] = preg_replace('/(&)?page=\d+/', '', $form['#action']);
+    // Next: remove show_items=___
+    $form['#action'] = preg_replace('/(&)?show_items=\d+/', '', $form['#action']);
+    // Finally, for aesthetics sake, remove an trailing question mark if there are
+    // no $_GET variables after it.
+    $form['#action'] = preg_replace('/\?$/', '', $form['#action']);
+
+    // Set a unique wrapper around the form to be used for our #ajax. $form['#build_id']
+    // is always unique, so it's beneficial to use this. It's not available in the original form
+    // definition however, which is why we add the ajax in an implementation of
+    // hook_form_alter()
+    $form['#prefix'] = '<div id="' . $form['#build_id'] . '">';
+    $form['#suffix'] = '</div>';
+    $form['apply']['#ajax'] = array
+    (
+      'callback' => 'ajax_pager_form_ajax_callback',
+      'wrapper' => $form['#build_id'],
+    );
+  }
+}
+
+/**
+ * Our ajax callback function for ajax_pager_form()
+ */
+function ajax_pager_form_ajax_callback($form, &$form_state)
+{
+  $commands = array();
+
+  // Return the rendered form, along with any status messages that
+  // have occurred during submission (such as validation errors)
+  $commands[] = ajax_command_replace(NULL, theme('status_messages') . render($form));
+
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
