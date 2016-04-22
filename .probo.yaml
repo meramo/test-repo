@@ -1,4 +1,12 @@
+assets:
+  - test.sql.gz
 steps:
-  - name: Test Connection
+  - name: Echo out something
     plugin: Shell
-    command: 'echo "Erroneous commmand"'
+    command: 'echo "Hoooray!"'
+  - name: Probo CI site setup
+    plugin: Drupal
+    database: test.sql.gz
+    databaseGzipped: true
+    databaseUpdates: true
+    clearCaches: true
