@@ -1,0 +1,25 @@
+<?php
+/**
+ * Implements hook_views_api().
+ */
+function appnovation_fillout_viewsfield_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'appnovation_fillout_viewsfield') . '/views',
+  );
+}
+
+/**
+ * Implements hook_views_data().
+ */
+function appnovation_fillout_viewsfield_views_data() {
+  $data = array();
+  $data['node']['fillout'] = array(
+    'title' => t('Fillout field'),
+    'help' => t('Will display a link to node edit ONLY if any of the current row\'s listed fields is empty.'),
+    'field' => array(
+      'handler' => 'appnovation_fillout_viewsfield_handler_fillout', // MODULE_handler_HANDLERNAME
+    ),
+  );
+  return $data;
+}

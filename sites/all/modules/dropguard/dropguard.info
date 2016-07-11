@@ -1,0 +1,11 @@
+name = DropGuard
+description = Provides integration with DropGuard service to support security protection for your web site.
+core = 7.x
+configure = admin/config/services/dropguard
+
+; Information added by Drupal.org packaging script on 2015-03-30
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "dropguard"
+datestamp = "1427721782"
+

@@ -1,0 +1,4 @@
+name = Create a custom ctools plugin
+description = Just an example.
+core = 7.x
+files[] = ctools_link.module

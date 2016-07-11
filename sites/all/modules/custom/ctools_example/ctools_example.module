@@ -1,0 +1,47 @@
+<?php
+/**
+ * @file
+ * Module for ctools content type creating.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function ctools_example_menu() {
+  $items['ctools_example/autocomplete'] = array(
+    'title' => 'User autocomplete',
+    'page callback' => 'ctools_example_autocomplete',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer panels layouts'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/*
+ * Implements hook_ctools_plugin_directory -
+ */
+function ctools_example_ctools_plugin_directory($owner, $plugin_type) {
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/content_types';
+  }
+}
+
+/**
+ * Menu callback; Retrieve a JSON object containing autocomplete suggestions for example blocks.
+ */
+function ctools_example_autocomplete($string = '') {
+  $matches = array();
+  if ($string) {
+    $result = db_select('node')
+              ->fields('node', array('title', 'nid'))
+              ->condition('title', db_like($string) . '%', 'LIKE')
+              ->range(0, 15)
+              ->execute();
+    foreach ($result as $node) {
+      $matches[$node->title . " [nid:{$node->nid}]"] = $node->title . " [nid:{$node->nid}]";
+    }
+  }
+  drupal_json_output($matches);
+}
+

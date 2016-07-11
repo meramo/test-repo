@@ -1,0 +1,4 @@
+name = Custom view field example
+description = A field which will check if the rest of the fields in the current row are populated, and if any of them are empty, then display a link markup to prompt the editor to take care of that.
+core = 7.x
+files[] = appnovation_fillout_viewsfield.module
